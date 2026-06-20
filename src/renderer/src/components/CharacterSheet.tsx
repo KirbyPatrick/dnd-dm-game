@@ -1,10 +1,4 @@
-import {
-  ABILITY_KEYS,
-  ABILITY_LABELS,
-  formatMod,
-  type Character,
-  type PartyMember
-} from '@renderer/state/types'
+import type { Character, PartyMember } from '@renderer/state/types'
 import { PartyList } from './PartyCard'
 import { PartyXpBar } from './PartyXpBar'
 
@@ -20,11 +14,14 @@ interface Props {
 export function CharacterSheet({ character: c, party, xp, level, onOpenHero, onOpenParty }: Props) {
   return (
     <aside className="sheet">
-      <button className="hero-header" onClick={onOpenHero} title="View details">
+      <button className="hero-header" onClick={onOpenHero} title="View full character sheet">
         <h2 className="sheet-name">{c.name}</h2>
         <p className="sheet-sub">
-          Level {c.level} {c.raceName} {c.className}
-          {c.subclass ? ` · ${c.subclass}` : ''}
+          Level {c.level} {c.raceName}
+        </p>
+        <p className="sheet-class">
+          {c.className}
+          {c.subclass ? ` - ${c.subclass}` : ''}
         </p>
       </button>
 
@@ -50,16 +47,6 @@ export function CharacterSheet({ character: c, party, xp, level, onOpenHero, onO
           ))}
         </div>
       )}
-
-      <div className="abilities">
-        {ABILITY_KEYS.map((k) => (
-          <div key={k} className="ability">
-            <span className="ability-label">{ABILITY_LABELS[k].slice(0, 3).toUpperCase()}</span>
-            <span className="ability-score">{c.abilities[k]}</span>
-            <span className="ability-mod">{formatMod(c.abilities[k])}</span>
-          </div>
-        ))}
-      </div>
 
       <PartyXpBar xp={xp} level={level} />
 

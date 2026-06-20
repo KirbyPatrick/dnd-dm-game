@@ -17,7 +17,7 @@ export function PartyCard({ member, onOpen }: { member: PartyMember; onOpen: () 
         {member.className && (
           <div className="party-class">
             {member.className}
-            {member.subclass ? ` · ${member.subclass}` : ''}
+            {member.subclass ? ` - ${member.subclass}` : ''}
           </div>
         )}
         <div className="party-hpbar">

@@ -95,7 +95,7 @@ function subtitle(subject: Subject): string {
   }
   const d = subject.data
   const gender = d.gender ? `${d.gender} · ` : ''
-  const sub = d.subclass ? ` · ${d.subclass}` : ''
+  const sub = d.subclass ? ` - ${d.subclass}` : ''
   if (subject.kind === 'hero') {
     return `${gender}Level ${d.level} ${(d as Character).raceName} ${d.className}${sub}`
   }

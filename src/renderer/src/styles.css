@@ -343,9 +343,15 @@ button {
   font-size: 22px;
 }
 .sheet-sub {
-  margin: 4px 0 18px;
+  margin: 4px 0 2px;
   color: var(--muted);
   font-size: 14px;
+}
+.sheet-class {
+  margin: 0 0 18px;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: bold;
 }
 .hp {
   display: flex;
