@@ -119,6 +119,20 @@ function StatsTab({ subject }: { subject: Subject }) {
         )}
       </div>
 
+      {subject.kind !== 'enemy' && (
+        <Section title="Subclass">
+          {(d as CharSheet).subclass ? (
+            <p className="kv">{(d as CharSheet).subclass}</p>
+          ) : (
+            <p className="tab-empty">
+              {((d as { level?: number }).level ?? 1) >= 3
+                ? 'Not chosen yet — tell the DM which subclass to take.'
+                : 'Chosen at level 3.'}
+            </p>
+          )}
+        </Section>
+      )}
+
       {abilities && Object.keys(abilities).length > 0 ? (
         <div className="modal-abilities">
           {ABILITY_KEYS.filter((k) => abilities[k] !== undefined).map((k) => (

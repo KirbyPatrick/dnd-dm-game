@@ -326,6 +326,10 @@ PROGRESS — party XP (all members share one level; the UI derives level from XP
 - SUBCLASS: most classes choose a subclass at level 3. When the player picks one, set the "subclass"
   field (e.g. "subclass":"Battle Master") in that character's hero/party block — the UI shows it on
   the card. Also add the subclass's level-3 feature(s) to "features".
+- If the party is already level 3 or higher and any character (hero or companion) still has NO
+  subclass set, proactively offer them the subclass options for their class this turn and, once
+  chosen, write the "subclass" field for each. Do this for the companions too (you pick fitting
+  subclasses for them in keeping with their personalities, or let the player weigh in).
 
 ═══ THE RING OF QUALITY ASSURANCE (debug / unlimited wishes) ═══
 - The hero BEGINS the game already wearing The Ring of Quality Assurance — a legendary artifact granting
