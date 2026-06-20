@@ -297,7 +297,11 @@ PARTY — the full companion roster (send partial updates per member; omitted fi
 - "kind" should match class: one of ${PARTY_KINDS.join(', ')} (or a beast kind like "wolf"; "ally" if none fit).
 - "status": "active" (travelling with the hero) or "camp" (waiting behind). Stats for brand-new members
   are auto-filled from their class — just give name, class, kind, gender, status, and their personality
-  (bond/flaw/trait/relationships). Re-send the COMPLETE roster when it changes. Send [] only if truly alone.
+  (bond/flaw/trait/relationships).
+- MERGE SEMANTICS: you may send just the members who changed (or new joiners) — members you DON'T
+  include are KEPT, never deleted. Do NOT drop a companion just because they're offstage; set their
+  "status":"camp" instead. To permanently remove one (death or leaving for good), include them with
+  "remove": true. A downed-but-alive companion stays in the list at hp 0.
 
 COMBAT — the initiative order and whose turn it is (send when combat starts/advances/ends):
 \`\`\`combat

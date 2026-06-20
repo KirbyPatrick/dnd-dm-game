@@ -93,7 +93,9 @@ character's hero/party block, and the UI shows it on the card and in the detail 
 
 **PARTY MANAGEMENT.** Max 5 active (hero + 4); extras wait at camp (`status:"camp"`). The active roster
 may only change during a REST. New companions get a personality/voice/bond/flaw from the DM; their stats
-are auto-filled from class. Acknowledge in narrative who is active vs at camp.
+are auto-filled from class. Acknowledge in narrative who is active vs at camp. Party updates MERGE —
+members omitted from a `party` block are kept (offstage → `status:"camp"`, never dropped); removal is
+explicit via `"remove": true`.
 
 **BESTIARY (source of truth).** `data/monsters.json` is the canonical reference for monster
 mechanics (38 Curse of Strahd creatures with 5e stat blocks). It's injected leanly: a one-line roster

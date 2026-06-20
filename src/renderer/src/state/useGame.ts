@@ -161,9 +161,17 @@ function ensureClassDetail(m: PartyMember): PartyMember {
   }
 }
 
+// Merge updates INTO the existing roster: existing members not mentioned are
+// KEPT (so a partial party block never silently deletes companions). Removal is
+// explicit (remove flag / death-departure status).
 function mergeParty(prev: PartyMember[], updates: PartyUpdate[], level: number): PartyMember[] {
-  const merged = updates.map((u) => {
-    const old = prev.find((p) => p.name === u.name)
+  const byName = new Map(prev.map((p) => [p.name, p]))
+  for (const u of updates) {
+    if (u.remove) {
+      byName.delete(u.name)
+      continue
+    }
+    const old = byName.get(u.name)
     const base: PartyMember = old ?? {
       name: u.name,
       className: u.className ?? '',
@@ -179,7 +187,7 @@ function mergeParty(prev: PartyMember[], updates: PartyUpdate[], level: number):
       className: u.className ?? base.className,
       kind: u.kind ?? base.kind,
       gender: u.gender ?? base.gender,
-      level: level,
+      level,
       maxHp,
       hp: u.hp !== undefined ? Math.min(u.hp, maxHp) : base.hp,
       distance: u.distance ?? base.distance,
@@ -197,9 +205,9 @@ function mergeParty(prev: PartyMember[], updates: PartyUpdate[], level: number):
       spellSlots: u.spellSlots ?? base.spellSlots,
       features: u.features ?? base.features
     }
-    return ensureClassDetail(member)
-  })
-  return enforceActiveCap(merged)
+    byName.set(u.name, ensureClassDetail(member))
+  }
+  return enforceActiveCap([...byName.values()].map((p) => (p.level === level ? p : { ...p, level })))
 }
 
 // Backfill AC/abilities on enemy cards from the canonical bestiary when the DM

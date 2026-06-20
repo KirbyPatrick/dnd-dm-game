@@ -247,6 +247,7 @@ export interface PartyUpdate extends SheetUpdate {
   gender?: string
   distance?: number
   status?: PartyStatus
+  remove?: boolean // explicit removal (death / permanent departure)
 }
 
 export function parseParty(text: string): PartyUpdate[] | null {
@@ -264,6 +265,9 @@ export function parseParty(text: string): PartyUpdate[] | null {
         if (typeof p.kind === 'string') out.kind = p.kind
         if (typeof p.gender === 'string') out.gender = p.gender
         if (p.status === 'active' || p.status === 'camp') out.status = p.status
+        // Treat death/departure markers as explicit removal.
+        if (p.remove === true || ['gone', 'dead', 'left', 'removed'].includes(p.status))
+          out.remove = true
         if (p.distance !== undefined) out.distance = Math.max(0, Number(p.distance) || 0)
         return out
       })
