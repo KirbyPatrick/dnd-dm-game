@@ -86,6 +86,7 @@ interface DmPayload {
   level?: number
   backstoryMode?: BackstoryMode
   inCombat?: boolean
+  bestiary?: { index?: string; active?: string }
   messages: Message[]
 }
 
@@ -139,6 +140,24 @@ function buildSystemPrompt(payload: DmPayload): string {
   const mode = payload.backstoryMode ?? 'flavor'
   const inCombat = !!payload.inCombat
   const level = payload.level ?? c.level
+
+  const bestiary = payload.bestiary
+  const bestiarySection = bestiary?.index
+    ? `
+
+═══ BESTIARY — AUTHORITATIVE SOURCE OF TRUTH ═══
+This is the canonical reference for monster mechanics. When any of these creatures appears, use its
+EXACT ac, hp, abilities, traits, and actions. NEVER narrate stats, hit/miss results, damage, or
+outcomes that contradict this data. When foes are defeated, award their listed XP via the progress block.
+
+ROSTER (all known creatures — headline stats):
+${bestiary.index}
+${
+  bestiary.active
+    ? `\nFULL STAT BLOCKS for creatures currently in the scene (use these exactly):\n${bestiary.active}`
+    : '\nNo canonical creatures are in the scene yet. When you bring one onto the board, match its roster line above; its full stat block will be provided next turn.'
+}`
+    : ''
 
   const craftGuidance = inCombat
     ? ''
@@ -230,6 +249,8 @@ ${backstorySection(c, mode)}
 - Keep responses tight: 2-4 short paragraphs of prose, then hand control back with an implicit or
   explicit "what do you do?". Always second person for the hero ("You...").
 ${craftGuidance}
+${bestiarySection}
+
 ═══ OUTPUT FORMAT ═══
 - Write narration as normal prose paragraphs. Keep mechanics OUT of the prose.
 - Put every roll YOU make (companions, enemies) and its outcome on its OWN line, beginning with 🎲:

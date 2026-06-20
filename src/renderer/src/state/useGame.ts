@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { statsForClass } from '@renderer/data/partyStats'
 import { gainsBetween, hpPerLevel } from '@renderer/data/progression'
+import { bestiaryIndex, findMonster, statBlocksFor } from '@renderer/data/bestiary'
 import {
   abilityMod,
   levelFromXp,
@@ -199,6 +200,17 @@ function mergeParty(prev: PartyMember[], updates: PartyUpdate[], level: number):
   return enforceActiveCap(merged)
 }
 
+// Backfill AC/abilities on enemy cards from the canonical bestiary when the DM
+// omits them — so the UI shows source-of-truth numbers.
+function enrichEnemies(enemies: Enemy[]): Enemy[] {
+  return enemies.map((e) => {
+    if (e.ac !== undefined && e.abilities) return e
+    const m = findMonster(e.name) ?? findMonster(e.kind)
+    if (!m) return e
+    return { ...e, ac: e.ac ?? m.ac, abilities: e.abilities ?? m.abilities }
+  })
+}
+
 // At most MAX_ACTIVE_COMPANIONS may be active; extras are sent to camp.
 function enforceActiveCap(members: PartyMember[]): PartyMember[] {
   let active = 0
@@ -278,6 +290,10 @@ export function useGame(): Game {
           level: levelFromXp(xpNow),
           backstoryMode: mode,
           inCombat: enemiesNow.length > 0,
+          bestiary: {
+            index: bestiaryIndex(),
+            active: statBlocksFor(enemiesNow.flatMap((e) => [e.name, e.kind]))
+          },
           messages: history
         })
         const next: Message[] = [...history, { role: 'assistant', content: text }]
@@ -291,8 +307,8 @@ export function useGame(): Game {
         const lvl = levelFromXp(nextXp)
 
         const parsedEnemies = parseEnemies(text)
-        const nextEnemies = parsedEnemies ?? enemiesNow
-        if (parsedEnemies) setEnemies(parsedEnemies)
+        const nextEnemies = parsedEnemies ? enrichEnemies(parsedEnemies) : enemiesNow
+        if (parsedEnemies) setEnemies(nextEnemies)
 
         const parsedParty = parseParty(text)
         let nextParty = parsedParty ? mergeParty(partyNow, parsedParty, lvl) : stampLevel(partyNow, lvl)

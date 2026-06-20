@@ -93,6 +93,13 @@ subclass feature / specific spells via the blocks. DM knows the current level (p
 may only change during a REST. New companions get a personality/voice/bond/flaw from the DM; their stats
 are auto-filled from class. Acknowledge in narrative who is active vs at camp.
 
+**BESTIARY (source of truth).** `data/monsters.json` is the canonical reference for monster
+mechanics (38 Curse of Strahd creatures with 5e stat blocks). It's injected leanly: a one-line roster
+index of every creature is always in the prompt, and the FULL stat block is included only for
+creatures currently in the scene. The DM must use exact AC/HP/abilities/traits and never contradict
+it; enemy cards backfill AC/abilities from it when the DM omits them. (Renderer builds the payload in
+`useGame`; `data/bestiary.ts` has the helpers — `main` can't import renderer data directly.)
+
 **WRITE-BACK DISCIPLINE.** The UI reads only the state blocks. NEVER narrate a change (HP, conditions,
 abilities, AC, inventory, spells/abilities, XP, party membership, position, combat turn) without writing
 it into the matching block in the same reply; never silently change unstated state.
