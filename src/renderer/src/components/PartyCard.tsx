@@ -14,7 +14,12 @@ export function PartyCard({ member, onOpen }: { member: PartyMember; onOpen: () 
       </div>
       <div className="party-info">
         <div className="party-name">{member.name}</div>
-        {member.className && <div className="party-class">{member.className}</div>}
+        {member.className && (
+          <div className="party-class">
+            {member.className}
+            {member.subclass ? ` · ${member.subclass}` : ''}
+          </div>
+        )}
         <div className="party-hpbar">
           <div className="party-hpfill" style={{ width: `${pct}%` }} />
         </div>

@@ -32,6 +32,7 @@ export interface Feature {
 /** Deeper sheet detail shown in the card modal; the DM fills these over play. */
 export interface CharSheet {
   ac?: number
+  subclass?: string // chosen at level 3; set by the DM when the player picks
   inventory?: Item[]
   bond?: string
   flaw?: string
@@ -194,6 +195,7 @@ export interface SheetUpdate extends CharSheet {
 function readSheet(raw: Record<string, unknown>): SheetUpdate {
   const out: SheetUpdate = {}
   if (raw.ac !== undefined) out.ac = Math.max(0, Number(raw.ac) || 0)
+  if (typeof raw.subclass === 'string') out.subclass = raw.subclass
   if (raw.hp !== undefined) out.hp = Math.max(0, Number(raw.hp) || 0)
   if (raw.maxHp !== undefined) out.maxHp = Math.max(1, Number(raw.maxHp) || 1)
   if (raw.level !== undefined) out.level = Math.max(1, Number(raw.level) || 1)

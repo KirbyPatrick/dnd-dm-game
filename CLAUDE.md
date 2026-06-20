@@ -88,6 +88,8 @@ derived from 5e thresholds and level up together. The APP applies the mechanical
 re-emit those in the hero/party blocks (it would duplicate). Instead the DM narrates the level-up and
 invites the player's choices (subclass when due, ASI/feat, new spells), then may write the chosen
 subclass feature / specific spells via the blocks. DM knows the current level (passed in) and scales to it.
+When the player picks a **subclass** (level 3 for most classes), the DM sets a `"subclass"` field on that
+character's hero/party block, and the UI shows it on the card and in the detail modal.
 
 **PARTY MANAGEMENT.** Max 5 active (hero + 4); extras wait at camp (`status:"camp"`). The active roster
 may only change during a REST. New companions get a personality/voice/bond/flaw from the DM; their stats

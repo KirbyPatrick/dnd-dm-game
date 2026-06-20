@@ -24,6 +24,7 @@ export function CharacterSheet({ character: c, party, xp, level, onOpenHero, onO
         <h2 className="sheet-name">{c.name}</h2>
         <p className="sheet-sub">
           Level {c.level} {c.raceName} {c.className}
+          {c.subclass ? ` · ${c.subclass}` : ''}
         </p>
       </button>
 

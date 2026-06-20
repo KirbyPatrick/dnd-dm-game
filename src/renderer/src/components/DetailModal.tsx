@@ -95,11 +95,12 @@ function subtitle(subject: Subject): string {
   }
   const d = subject.data
   const gender = d.gender ? `${d.gender} · ` : ''
+  const sub = d.subclass ? ` · ${d.subclass}` : ''
   if (subject.kind === 'hero') {
-    return `${gender}Level ${d.level} ${(d as Character).raceName} ${d.className}`
+    return `${gender}Level ${d.level} ${(d as Character).raceName} ${d.className}${sub}`
   }
   const pm = d as PartyMember
-  return `${gender}Level ${pm.level ?? 1} ${pm.className}`
+  return `${gender}Level ${pm.level ?? 1} ${pm.className}${sub}`
 }
 
 function StatsTab({ subject }: { subject: Subject }) {

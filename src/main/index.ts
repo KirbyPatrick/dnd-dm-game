@@ -59,6 +59,7 @@ interface Character {
   gender?: string
   raceName: string
   className: string
+  subclass?: string
   level: number
   hp: number
   maxHp: number
@@ -71,6 +72,7 @@ interface PartyMember {
   name: string
   gender?: string
   className: string
+  subclass?: string
   level?: number
   status?: 'active' | 'camp'
 }
@@ -102,7 +104,7 @@ function heroBlock(c: Character, level: number): string {
   )}), INT ${a.int} (${mod(a.int)}), WIS ${a.wis} (${mod(a.wis)}), CHA ${a.cha} (${mod(a.cha)})`
   return [
     `Name: ${c.name}${c.gender ? ` (${c.gender})` : ''}`,
-    `Race & class: Level ${level} ${c.raceName} ${c.className}`,
+    `Race & class: Level ${level} ${c.raceName} ${c.className}${c.subclass ? ` (${c.subclass})` : ''}`,
     `HP ${c.hp}/${c.maxHp}${c.ac !== undefined ? ` · AC ${c.ac}` : ''}`,
     `Abilities: ${abil}`
   ].join('\n')
@@ -111,7 +113,9 @@ function heroBlock(c: Character, level: number): string {
 function partyBlock(party: PartyMember[], level: number): string {
   if (!party.length) return 'The hero travels alone (for now).'
   const fmt = (p: PartyMember): string =>
-    `- ${p.name}${p.gender ? ` (${p.gender})` : ''}, level ${level} ${p.className}`
+    `- ${p.name}${p.gender ? ` (${p.gender})` : ''}, level ${level} ${p.className}${
+      p.subclass ? ` (${p.subclass})` : ''
+    }`
   const active = party.filter((p) => p.status !== 'camp')
   const camp = party.filter((p) => p.status === 'camp')
   const lines = [active.length ? 'ACTIVE (in the field):' : 'No active companions.']
@@ -315,6 +319,9 @@ PROGRESS — party XP (all members share one level; the UI derives level from XP
   invite the player to make the CHOICES the rules offer at this level — subclass (when due), an Ability
   Score Improvement or feat, and any newly learned/prepared spells. Once the player chooses, you MAY add
   their chosen subclass feature or specific spells (not the standard list) via the hero/party blocks.
+- SUBCLASS: most classes choose a subclass at level 3. When the player picks one, set the "subclass"
+  field (e.g. "subclass":"Battle Master") in that character's hero/party block — the UI shows it on
+  the card. Also add the subclass's level-3 feature(s) to "features".
 
 ═══ THE RING OF QUALITY ASSURANCE (debug / unlimited wishes) ═══
 - The hero BEGINS the game already wearing The Ring of Quality Assurance — a legendary artifact granting
