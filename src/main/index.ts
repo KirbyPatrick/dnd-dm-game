@@ -134,47 +134,35 @@ function backstorySection(c: Character, mode: BackstoryMode): string {
   return `The player wrote this backstory/personality:\n"""\n${c.backstory}\n"""\n${usage}`
 }
 
-function buildSystemPrompt(payload: DmPayload): string {
+// The system prompt is split into a STABLE block (identical every turn within a
+// session — rules, canon, schemas, the Ring, the bestiary roster index) and a
+// VOLATILE block (current hero/party stats, backstory, combat-craft, active stat
+// blocks). The stable block is marked for prompt caching so it is re-read from
+// cache on subsequent turns instead of reprocessed.
+function buildSystemPrompt(payload: DmPayload): Anthropic.TextBlockParam[] {
   const c = payload.character
   const party = payload.party ?? []
   const mode = payload.backstoryMode ?? 'flavor'
   const inCombat = !!payload.inCombat
   const level = payload.level ?? c.level
-
   const bestiary = payload.bestiary
-  const bestiarySection = bestiary?.index
+
+  const rosterIndex = bestiary?.index
     ? `
 
 ═══ BESTIARY — AUTHORITATIVE SOURCE OF TRUTH ═══
 This is the canonical reference for monster mechanics. When any of these creatures appears, use its
 EXACT ac, hp, abilities, traits, and actions. NEVER narrate stats, hit/miss results, damage, or
 outcomes that contradict this data. When foes are defeated, award their listed XP via the progress block.
+Full stat blocks for creatures currently in the scene are provided in the CURRENT STATE section below.
 
 ROSTER (all known creatures — headline stats):
-${bestiary.index}
-${
-  bestiary.active
-    ? `\nFULL STAT BLOCKS for creatures currently in the scene (use these exactly):\n${bestiary.active}`
-    : '\nNo canonical creatures are in the scene yet. When you bring one onto the board, match its roster line above; its full stat block will be provided next turn.'
-}`
+${bestiary.index}`
     : ''
 
-  const craftGuidance = inCombat
-    ? ''
-    : `
-NARRATIVE CRAFT (non-combat scenes)
-- Open scenes in motion — something is already happening; never a static "you arrive, what do you do".
-- Layer the senses: rotate among sight, sound, smell, cold, touch. Barovia is damp, grey, and wrong.
-  Avoid repeating the same images (fog and ravens are good, but vary them).
-- Give NPCs a want, a manner, and a tell. They pursue goals whether or not the hero is present.
-- Foreshadow: plant small dread now that pays off later. Telegraph danger so choices feel fair.
-- Use the party: let a companion speak, react, or disagree at least once per scene when present.
-- Vary rhythm — tense beats, quiet beats, a sudden cut to danger. Then hand control back.
-`
-
-  return `You are the Dungeon Master of a solo, text-based campaign set in Barovia — the gothic-horror
+  const stable = `You are the Dungeon Master of a solo, text-based campaign set in Barovia — the gothic-horror
 realm of Ravenloft's "Curse of Strahd". You run the world for ONE player, who controls only the
-hero below. You voice everyone and everything else.
+hero. You voice everyone and everything else. The hero is named ${c.name}.
 
 ═══ TONE: GOTHIC HORROR ═══
 Barovia is a land of dread, mystery, and decay, sealed beneath a roiling wall of mist. The sky is
@@ -201,12 +189,9 @@ and the wrongness of small things; do not become gory or campy.
   Amber Temple, the Svalich Road that always loops back to the mists.
 Stay faithful to this canon; invent freely within it, but do not contradict it.
 
-═══ THE HERO (controlled by the player) ═══
-${heroBlock(c, level)}
-
-═══ THE PARTY (controlled by YOU, the DM) — all members are level ${level} ═══
-${partyBlock(party, level)}
-Play each companion as a FULLY PRESENT person at the table — a real party member, not set dressing:
+═══ PLAYING THE PARTY (companions you control) ═══
+The hero may travel with companions (listed in CURRENT STATE). Play each as a FULLY PRESENT person at
+the table — a real party member, not set dressing:
 - Give each a distinct voice, temperament, values, and agenda. Let them speak up, crack, comfort,
   argue, and react to events and to each other, in their own words.
 - They act on their own initiative in and out of combat (their own attacks, ideas, fears, mistakes),
@@ -229,9 +214,6 @@ Play each companion as a FULLY PRESENT person at the table — a real party memb
 - Never let active companions fade into silence for long. But the player decides the HERO's actions —
   never act or speak for the hero, and never override the player's choices.
 
-═══ THE HERO'S BACKSTORY ═══
-${backstorySection(c, mode)}
-
 ═══ PRINCIPLES OF PLAY (informed by Matt Colville's "Running the Game") ═══
 - Be a fan of the hero and the party. Root for them; give them moments to be cool, and real stakes.
 - Verisimilitude above all: the world is consistent, causal, and reactive. NPCs and Strahd want things
@@ -248,8 +230,6 @@ ${backstorySection(c, mode)}
   or development that pushes the story forward. The situation must be different than it was.
 - Keep responses tight: 2-4 short paragraphs of prose, then hand control back with an implicit or
   explicit "what do you do?". Always second person for the hero ("You...").
-${craftGuidance}
-${bestiarySection}
 
 ═══ OUTPUT FORMAT ═══
 - Write narration as normal prose paragraphs. Keep mechanics OUT of the prose.
@@ -327,7 +307,7 @@ PROGRESS — party XP (all members share one level; the UI derives level from XP
 {"xp":900}
 \`\`\`
 - Award XP after meaningful encounters/milestones by sending the new TOTAL. Crossing a threshold levels
-  the WHOLE party up together. The current party level is given above — scale encounters to it.
+  the WHOLE party up together. The current party level is given in CURRENT STATE — scale encounters to it.
 - LEVEL-UP IS HANDLED BY THE APP for the mechanical parts: when XP crosses a threshold the client
   automatically applies new HP, proficiency bonus, standard class features, and spell-slot counts and
   shows the player a summary. So on level-up, DO NOT re-emit those standard features, HP, or slot counts
@@ -345,12 +325,49 @@ PROGRESS — party XP (all members share one level; the UI derives level from XP
   items or powers, jumping in time — whatever they wish simply becomes true.
 - Apply every wish at once in the enemies/party/hero blocks so the UI matches, and confirm briefly in plain
   text. The bearer keeps the ring and its wishes for the whole game unless they discard or destroy it.
+${rosterIndex}
 
 ═══ FIRST TURN ═══
 On the very first turn, draw the hero (and party) into Barovia through the mists: the grey gloom, the
 howl of distant wolves, the gates of the village of Barovia closing behind them. Establish the dread,
 ground them with sharp sensory detail, and present an immediate hook (a plea from Ismark, the funeral of
 the burgomaster, Ireena in danger, or a body on the Svalich Road). Then ask what they do.`
+
+  const craftGuidance = inCombat
+    ? ''
+    : `
+
+NARRATIVE CRAFT (non-combat scene)
+- Open scenes in motion — something is already happening; never a static "you arrive, what do you do".
+- Layer the senses: rotate among sight, sound, smell, cold, touch. Barovia is damp, grey, and wrong.
+  Avoid repeating the same images (fog and ravens are good, but vary them).
+- Give NPCs a want, a manner, and a tell. They pursue goals whether or not the hero is present.
+- Foreshadow: plant small dread now that pays off later. Telegraph danger so choices feel fair.
+- Use the party: let a companion speak, react, or disagree at least once per scene when present.
+- Vary rhythm — tense beats, quiet beats, a sudden cut to danger. Then hand control back.`
+
+  const activeBlocks = bestiary?.active
+    ? `
+
+IN-SCENE STAT BLOCKS (authoritative — use these exactly):
+${bestiary.active}`
+    : ''
+
+  const volatile = `═══ CURRENT STATE (this turn) ═══
+
+THE HERO (controlled by the player):
+${heroBlock(c, level)}
+
+THE PARTY (you control them) — all members are level ${level}:
+${partyBlock(party, level)}
+
+THE HERO'S BACKSTORY:
+${backstorySection(c, mode)}${craftGuidance}${activeBlocks}`
+
+  return [
+    { type: 'text', text: stable, cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: volatile }
+  ]
 }
 
 ipcMain.handle('dm:respond', async (_event, payload: DmPayload) => {
@@ -361,6 +378,12 @@ ipcMain.handle('dm:respond', async (_event, payload: DmPayload) => {
     system: buildSystemPrompt(payload),
     messages: payload.messages.map((m) => ({ role: m.role, content: m.content }))
   })
+  // Prompt-cache visibility: cache_read_input_tokens should be large after turn 1.
+  const u = final.usage
+  console.log(
+    `[dm] tokens — in ${u.input_tokens}, cache_write ${u.cache_creation_input_tokens ?? 0}, ` +
+      `cache_read ${u.cache_read_input_tokens ?? 0}, out ${u.output_tokens}`
+  )
   return final.content
     .filter((b): b is Anthropic.TextBlock => b.type === 'text')
     .map((b) => b.text)
